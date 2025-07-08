@@ -158,15 +158,23 @@ def job_apply(request, pk):
             form = JobApplicationForm(request.POST)
             if form.is_valid():
                 try:
+                    print(f"DEBUG: Starting job application for job {job.id}")
                     application = form.save(commit=False)
                     application.job = job
                     application.applicant = job_seeker_profile
                     application.save()
+                    print(f"DEBUG: Application saved successfully")
                     
                     # Send notification to company
-                    from user_notifications.utils import notify_job_application_received
-                    notify_job_application_received(job, job_seeker_profile, job.posted_by)
+                    try:
+                        from user_notifications.utils import notify_job_application_received
+                        notify_job_application_received(job, job_seeker_profile, job.posted_by)
+                        print(f"DEBUG: Notification sent successfully")
+                    except Exception as e:
+                        # Don't let notification errors stop application submission
+                        print(f"Notification error: {e}")
                     
+                    print(f"DEBUG: About to show success message and redirect")
                     messages.success(request, 'Your application has been submitted successfully!')
                     return redirect('jobs:job_detail', pk=pk)
                 except Exception as e:
@@ -204,9 +212,13 @@ def job_create(request):
                 job.posted_by = request.user
                 job.save()
                 
-                # Send notification to relevant job seekers
-                from user_notifications.utils import notify_new_job_posted
-                notify_new_job_posted(job)
+                # Send notification to relevant job seekers (async to prevent delays)
+                try:
+                    from user_notifications.utils import notify_new_job_posted
+                    notify_new_job_posted(job)
+                except Exception as e:
+                    # Don't let notification errors stop job creation
+                    print(f"Notification error: {e}")
                 
                 messages.success(request, 'Job posted successfully!')
                 return redirect('jobs:job_detail', pk=job.pk)

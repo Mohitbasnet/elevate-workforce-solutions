@@ -99,20 +99,25 @@ def send_email_notification(notification):
 
 def notify_job_application_received(job, applicant, company_user):
     """Notify company when they receive a new job application"""
-    create_notification(
-        recipient=company_user,
-        notification_type='job_application',
-        title=f"New Application for {job.title}",
-        message=f"{applicant.user_profile.get_full_name()} has applied for your {job.title} position.",
-        sender=applicant.user_profile.user,
-        priority='medium',
-        action_url=reverse('jobs:job_applications', kwargs={'pk': job.pk}),
-        action_text="View Application",
-        extra_data={
-            'job_id': job.id,
-            'applicant_id': applicant.id,
-        }
-    )
+    try:
+        create_notification(
+            recipient=company_user,
+            notification_type='job_application',
+            title=f"New Application for {job.title}",
+            message=f"{applicant.user_profile.get_full_name()} has applied for your {job.title} position.",
+            sender=applicant.user_profile.user,
+            priority='medium',
+            action_url=reverse('jobs:job_applications', kwargs={'pk': job.pk}),
+            action_text="View Application",
+            extra_data={
+                'job_id': job.id,
+                'applicant_id': applicant.id,
+            }
+        )
+    except Exception as e:
+        # Don't let notification errors stop the application
+        logger.error(f"Error creating job application notification: {e}")
+        pass
 
 def notify_application_status_change(application, new_status):
     """Notify job seeker when their application status changes"""
@@ -151,30 +156,43 @@ def notify_application_status_change(application, new_status):
 
 def notify_new_job_posted(job):
     """Notify relevant job seekers when a new job is posted"""
-    from accounts.models import JobSeekerProfile
-    
-    # Get job seekers who might be interested (basic matching)
-    relevant_seekers = JobSeekerProfile.objects.filter(
-        user_profile__user_type='job_seeker'
-    )
-    
-    # You can add more sophisticated matching logic here
-    # For now, notify all job seekers (limited to prevent spam)
-    for seeker in relevant_seekers[:50]:  # Limit to prevent spam
-        create_notification(
-            recipient=seeker.user_profile.user,
-            notification_type='new_job_match',
-            title=f"New Job Opportunity: {job.title}",
-            message=f"A new {job.title} position is available at {job.company.company_name} in {job.location}.",
-            sender=job.posted_by,
-            priority='low',
-            action_url=reverse('jobs:job_detail', kwargs={'pk': job.pk}),
-            action_text="View Job",
-            extra_data={
-                'job_id': job.id,
-                'company_id': job.company.id,
-            }
-        )
+    try:
+        from accounts.models import JobSeekerProfile
+        
+        # Get job seekers who might be interested (basic matching)
+        # Limit to 10 for now to prevent slowdowns
+        relevant_seekers = JobSeekerProfile.objects.filter(
+            user_profile__user_type='job_seeker'
+        ).select_related('user_profile__user')[:10]  # Reduced limit for performance
+        
+        # Create notifications in bulk to improve performance
+        notifications_to_create = []
+        for seeker in relevant_seekers:
+            notifications_to_create.append(
+                Notification(
+                    recipient=seeker.user_profile.user,
+                    sender=job.posted_by,
+                    notification_type='new_job_match',
+                    title=f"New Job Opportunity: {job.title}",
+                    message=f"A new {job.title} position is available at {job.company.company_name} in {job.location}.",
+                    priority='low',
+                    action_url=reverse('jobs:job_detail', kwargs={'pk': job.pk}),
+                    action_text="View Job",
+                    extra_data={
+                        'job_id': job.id,
+                        'company_id': job.company.id,
+                    }
+                )
+            )
+        
+        # Bulk create notifications for better performance
+        if notifications_to_create:
+            Notification.objects.bulk_create(notifications_to_create)
+            
+    except Exception as e:
+        # Don't let notification errors stop job creation
+        logger.error(f"Error creating job notifications: {e}")
+        pass
 
 def notify_welcome_message(user):
     """Send welcome notification to new users"""

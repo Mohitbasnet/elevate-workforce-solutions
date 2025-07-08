@@ -198,6 +198,26 @@ textarea {
 </style>
 
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const submitButtons = form.querySelectorAll('button[type="submit"]');
+    
+    // Handle form submission
+    form.addEventListener('submit', function() {
+        submitButtons.forEach(button => {
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Publishing...';
+            button.disabled = true;
+            
+            // Re-enable after timeout as fallback
+            setTimeout(() => {
+                button.innerHTML = originalText;
+                button.disabled = false;
+            }, 10000);
+        });
+    });
+});
+
 function previewJob() {
     // Get form data
     const title = document.getElementById('id_title').value;
