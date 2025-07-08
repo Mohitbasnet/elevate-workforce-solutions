@@ -20,9 +20,10 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    path('admin/', admin.site.urls),
     path('', include('jobs.urls')),
     path('accounts/', include('accounts.urls')),
+    path('notifications/', include('user_notifications.urls')),
 ]
 
 if settings.DEBUG:

@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q, Count
 from django.db import models
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, Http404
 from .models import Job, JobApplication, JobCategory
 from .forms import JobForm, JobApplicationForm, JobSearchForm
 from accounts.models import UserProfile, CompanyProfile, JobSeekerProfile
@@ -102,7 +102,16 @@ def job_list(request):
     return render(request, 'jobs/job_list.html', context)
 
 def job_detail(request, pk):
-    job = get_object_or_404(Job, pk=pk, is_active=True)
+    # Allow job owners to view inactive jobs, but require active jobs for others
+    if request.user.is_authenticated:
+        # Use select_related to optimize the query
+        job = get_object_or_404(Job.objects.select_related('company__user_profile', 'category', 'posted_by'), pk=pk)
+        # If the user doesn't own the job and it's inactive, return 404
+        if job.posted_by != request.user and not job.is_active:
+            raise Http404("Job not found")
+    else:
+        job = get_object_or_404(Job.objects.select_related('company__user_profile', 'category', 'posted_by'), pk=pk, is_active=True)
+    
     user_has_applied = False
     can_apply = False
     
@@ -111,10 +120,11 @@ def job_detail(request, pk):
             user_profile = UserProfile.objects.get(user=request.user)
             if user_profile.user_type == 'job_seeker':
                 job_seeker_profile = JobSeekerProfile.objects.get(user_profile=user_profile)
+                # Optimize the application check
                 user_has_applied = JobApplication.objects.filter(
                     job=job, applicant=job_seeker_profile
                 ).exists()
-                can_apply = not user_has_applied
+                can_apply = not user_has_applied and job.is_active
         except (UserProfile.DoesNotExist, JobSeekerProfile.DoesNotExist):
             pass
     
@@ -130,27 +140,39 @@ def job_apply(request, pk):
     job = get_object_or_404(Job, pk=pk, is_active=True)
     
     try:
-        user_profile = UserProfile.objects.get(user=request.user)
+        # Use select_related to reduce database queries
+        user_profile = UserProfile.objects.select_related('user').get(user=request.user)
         if user_profile.user_type != 'job_seeker':
             messages.error(request, 'Only job seekers can apply for jobs.')
             return redirect('jobs:job_detail', pk=pk)
         
         job_seeker_profile = JobSeekerProfile.objects.get(user_profile=user_profile)
         
-        # Check if already applied
-        if JobApplication.objects.filter(job=job, applicant=job_seeker_profile).exists():
+        # Check if already applied (optimized query)
+        existing_application = JobApplication.objects.filter(job=job, applicant=job_seeker_profile).first()
+        if existing_application:
             messages.warning(request, 'You have already applied for this job.')
             return redirect('jobs:job_detail', pk=pk)
         
         if request.method == 'POST':
             form = JobApplicationForm(request.POST)
             if form.is_valid():
-                application = form.save(commit=False)
-                application.job = job
-                application.applicant = job_seeker_profile
-                application.save()
-                messages.success(request, 'Your application has been submitted successfully!')
-                return redirect('jobs:job_detail', pk=pk)
+                try:
+                    application = form.save(commit=False)
+                    application.job = job
+                    application.applicant = job_seeker_profile
+                    application.save()
+                    
+                    # Send notification to company
+                    from user_notifications.utils import notify_job_application_received
+                    notify_job_application_received(job, job_seeker_profile, job.posted_by)
+                    
+                    messages.success(request, 'Your application has been submitted successfully!')
+                    return redirect('jobs:job_detail', pk=pk)
+                except Exception as e:
+                    messages.error(request, 'There was an error submitting your application. Please try again.')
+                    # Log the error for debugging
+                    print(f"Job application error: {e}")
         else:
             form = JobApplicationForm()
         
@@ -181,6 +203,11 @@ def job_create(request):
                 job.company = company_profile
                 job.posted_by = request.user
                 job.save()
+                
+                # Send notification to relevant job seekers
+                from user_notifications.utils import notify_new_job_posted
+                notify_new_job_posted(job)
+                
                 messages.success(request, 'Job posted successfully!')
                 return redirect('jobs:job_detail', pk=job.pk)
         else:
@@ -203,7 +230,10 @@ def job_edit(request, pk):
     if request.method == 'POST':
         form = JobForm(request.POST, instance=job)
         if form.is_valid():
-            form.save()
+            job = form.save(commit=False)
+            # Handle is_active checkbox
+            job.is_active = 'is_active' in request.POST
+            job.save()
             messages.success(request, 'Job updated successfully!')
             return redirect('jobs:job_detail', pk=job.pk)
     else:
@@ -253,8 +283,14 @@ def update_application_status(request, application_id):
     if request.method == 'POST':
         status = request.POST.get('status')
         if status in dict(JobApplication.STATUS_CHOICES):
+            old_status = application.status
             application.status = status
             application.save()
+            
+            # Send notification to job seeker about status change
+            from user_notifications.utils import notify_application_status_change
+            notify_application_status_change(application, status)
+            
             messages.success(request, f'Application status updated to {application.get_status_display()}.')
     
     return redirect('jobs:job_applications', pk=application.job.pk)

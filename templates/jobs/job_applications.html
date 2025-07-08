@@ -1,0 +1,271 @@
+{% extends 'base.html' %}
+
+{% block title %}Job Applications - {{ job.title }} - Elevate Workforce Solutions{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Job Header -->
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h2 class="fw-bold text-primary mb-2">{{ job.title }}</h2>
+                    <div class="job-meta">
+                        <span class="me-3">
+                            <i class="fas fa-building me-1"></i>{{ job.company.company_name }}
+                        </span>
+                        <span class="me-3">
+                            <i class="fas fa-map-marker-alt me-1"></i>{{ job.location }}
+                        </span>
+                        <span class="me-3">
+                            <i class="fas fa-briefcase me-1"></i>{{ job.get_job_type_display }}
+                        </span>
+                        <span>
+                            <i class="fas fa-calendar me-1"></i>Posted {{ job.created_at|date:"M d, Y" }}
+                        </span>
+                    </div>
+                </div>
+                <div class="col-lg-4 text-lg-end">
+                    <div class="mb-2">
+                        <span class="badge bg-primary fs-6">{{ applications.count }} Application{{ applications.count|pluralize }}</span>
+                    </div>
+                    <div class="btn-group" role="group">
+                        <a href="{% url 'jobs:job_detail' job.pk %}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-eye me-1"></i>View Job
+                        </a>
+                        <a href="{% url 'jobs:job_edit' job.pk %}" class="btn btn-outline-warning btn-sm">
+                            <i class="fas fa-edit me-1"></i>Edit Job
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Applications List -->
+    {% if applications %}
+        <div class="card shadow">
+            <div class="card-header bg-light">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <h5 class="fw-bold mb-0">
+                            <i class="fas fa-users me-2"></i>Job Applications
+                        </h5>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-outline-secondary" onclick="exportApplications()">
+                                <i class="fas fa-download me-1"></i>Export
+                            </button>
+                            <button type="button" class="btn btn-outline-primary" onclick="filterApplications()">
+                                <i class="fas fa-filter me-1"></i>Filter
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Applicant</th>
+                                <th>Applied Date</th>
+                                <th>Status</th>
+                                <th>Cover Letter</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for application in applications %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-placeholder me-3">
+                                            {% if application.applicant.user_profile.profile_picture %}
+                                                <img src="{{ application.applicant.user_profile.profile_picture.url }}" 
+                                                     alt="{{ application.applicant.user_profile.get_full_name }}" 
+                                                     class="rounded-circle" width="40" height="40">
+                                            {% else %}
+                                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" 
+                                                     style="width: 40px; height: 40px;">
+                                                    {{ application.applicant.user_profile.first_name|first }}{{ application.applicant.user_profile.last_name|first }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold">{{ application.applicant.user_profile.get_full_name }}</div>
+                                            <small class="text-muted">{{ application.applicant.user_profile.email }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>{{ application.applied_at|date:"M d, Y" }}</div>
+                                    <small class="text-muted">{{ application.applied_at|date:"g:i A" }}</small>
+                                </td>
+                                <td>
+                                    {% if application.status == 'pending' %}
+                                        <span class="badge bg-warning">Pending</span>
+                                    {% elif application.status == 'reviewing' %}
+                                        <span class="badge bg-info">Reviewing</span>
+                                    {% elif application.status == 'shortlisted' %}
+                                        <span class="badge bg-primary">Shortlisted</span>
+                                    {% elif application.status == 'rejected' %}
+                                        <span class="badge bg-danger">Rejected</span>
+                                    {% elif application.status == 'hired' %}
+                                        <span class="badge bg-success">Hired</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if application.cover_letter %}
+                                        <button class="btn btn-sm btn-outline-info" 
+                                                onclick="showCoverLetter('{{ application.applicant.user_profile.get_full_name|escapejs }}', '{{ application.cover_letter|escapejs }}')">
+                                            <i class="fas fa-eye me-1"></i>View
+                                        </button>
+                                    {% else %}
+                                        <span class="text-muted">No cover letter</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        {% if application.applicant.resume %}
+                                            <a href="{{ application.applicant.resume.url }}" target="_blank" 
+                                               class="btn btn-outline-primary" title="View Resume">
+                                                <i class="fas fa-file-pdf"></i>
+                                            </a>
+                                        {% endif %}
+                                        <div class="dropdown">
+                                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" 
+                                                    data-bs-toggle="dropdown">
+                                                Status
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item" href="#" onclick="updateStatus({{ application.id }}, 'pending')">Pending</a></li>
+                                                <li><a class="dropdown-item" href="#" onclick="updateStatus({{ application.id }}, 'reviewing')">Reviewing</a></li>
+                                                <li><a class="dropdown-item" href="#" onclick="updateStatus({{ application.id }}, 'shortlisted')">Shortlisted</a></li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li><a class="dropdown-item text-success" href="#" onclick="updateStatus({{ application.id }}, 'hired')">Hired</a></li>
+                                                <li><a class="dropdown-item text-danger" href="#" onclick="updateStatus({{ application.id }}, 'rejected')">Rejected</a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <!-- No Applications State -->
+        <div class="card shadow">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                <h4 class="fw-bold mb-3">No Applications Yet</h4>
+                <p class="text-muted mb-4">
+                    Your job posting hasn't received any applications yet. Here are some tips to attract more candidates:
+                </p>
+                <div class="row justify-content-center">
+                    <div class="col-md-8">
+                        <div class="list-group list-group-flush">
+                            <div class="list-group-item border-0 bg-transparent">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Make sure your job title is clear and descriptive
+                            </div>
+                            <div class="list-group-item border-0 bg-transparent">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Include salary range if possible
+                            </div>
+                            <div class="list-group-item border-0 bg-transparent">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Write detailed job requirements and responsibilities
+                            </div>
+                            <div class="list-group-item border-0 bg-transparent">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Share your job posting on social media
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <a href="{% url 'jobs:job_edit' job.pk %}" class="btn btn-warning me-2">
+                                <i class="fas fa-edit me-2"></i>Edit Job Posting
+                            </a>
+                            <a href="{% url 'accounts:dashboard' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Cover Letter Modal -->
+<div class="modal fade" id="coverLetterModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="coverLetterTitle">Cover Letter</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="coverLetterContent"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.avatar-placeholder {
+    flex-shrink: 0;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.05);
+}
+
+.card {
+    border: none;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+</style>
+
+<script>
+function showCoverLetter(applicantName, coverLetter) {
+    document.getElementById('coverLetterTitle').textContent = `Cover Letter - ${applicantName}`;
+    document.getElementById('coverLetterContent').innerHTML = `<p>${coverLetter.replace(/\n/g, '<br>')}</p>`;
+    new bootstrap.Modal(document.getElementById('coverLetterModal')).show();
+}
+
+function updateStatus(applicationId, status) {
+    if (confirm(`Are you sure you want to update the application status to "${status}"?`)) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/applications/${applicationId}/update-status/`;
+        
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        form.innerHTML = `
+            <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
+            <input type="hidden" name="status" value="${status}">
+        `;
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+function exportApplications() {
+    // Placeholder for export functionality
+    alert('Export functionality coming soon!');
+}
+
+function filterApplications() {
+    // Placeholder for filter functionality
+    alert('Filter functionality coming soon!');
+}
+</script>
+{% endblock %} 

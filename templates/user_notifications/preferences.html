@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+
+{% block title %}Notification Preferences - Elevate Workforce Solutions{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-cog fa-3x text-primary mb-3"></i>
+                        <h2 class="fw-bold">Notification Preferences</h2>
+                        <p class="text-muted">Customize how and when you receive notifications</p>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- Email Notifications -->
+                        <div class="mb-5">
+                            <h5 class="fw-bold mb-3">
+                                <i class="fas fa-envelope me-2 text-primary"></i>Email Notifications
+                            </h5>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" name="email_job_applications" id="email_job_applications"
+                                               {% if preferences.email_job_applications %}checked{% endif %}>
+                                        <label class="form-check-label" for="email_job_applications">
+                                            <strong>Job Applications</strong>
+                                            <br><small class="text-muted">When someone applies for your jobs</small>
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" name="email_application_status" id="email_application_status"
+                                               {% if preferences.email_application_status %}checked{% endif %}>
+                                        <label class="form-check-label" for="email_application_status">
+                                            <strong>Application Status Updates</strong>
+                                            <br><small class="text-muted">When your application status changes</small>
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" name="email_new_job_matches" id="email_new_job_matches"
+                                               {% if preferences.email_new_job_matches %}checked{% endif %}>
+                                        <label class="form-check-label" for="email_new_job_matches">
+                                            <strong>New Job Matches</strong>
+                                            <br><small class="text-muted">When new jobs match your profile</small>
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" name="email_system_updates" id="email_system_updates"
+                                               {% if preferences.email_system_updates %}checked{% endif %}>
+                                        <label class="form-check-label" for="email_system_updates">
+                                            <strong>System Updates</strong>
+                                            <br><small class="text-muted">Important platform updates and announcements</small>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Email Frequency -->
+                            <div class="mt-4">
+                                <label for="email_frequency" class="form-label fw-bold">Email Frequency</label>
+                                <select class="form-select" name="email_frequency" id="email_frequency">
+                                    {% for value, label in frequency_choices %}
+                                        <option value="{{ value }}" {% if preferences.email_frequency == value %}selected{% endif %}>
+                                            {{ label }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">Choose how often you want to receive email notifications</div>
+                            </div>
+                        </div>
+
+                        <!-- Web Notifications -->
+                        <div class="mb-5">
+                            <h5 class="fw-bold mb-3">
+                                <i class="fas fa-bell me-2 text-primary"></i>Web Notifications
+                            </h5>
+                            <p class="text-muted mb-3">These notifications appear when you're using the platform</p>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" name="web_job_applications" id="web_job_applications"
+                                               {% if preferences.web_job_applications %}checked{% endif %}>
+                                        <label class="form-check-label" for="web_job_applications">
+                                            <strong>Job Applications</strong>
+                                            <br><small class="text-muted">When someone applies for your jobs</small>
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" name="web_application_status" id="web_application_status"
+                                               {% if preferences.web_application_status %}checked{% endif %}>
+                                        <label class="form-check-label" for="web_application_status">
+                                            <strong>Application Status Updates</strong>
+                                            <br><small class="text-muted">When your application status changes</small>
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" name="web_new_job_matches" id="web_new_job_matches"
+                                               {% if preferences.web_new_job_matches %}checked{% endif %}>
+                                        <label class="form-check-label" for="web_new_job_matches">
+                                            <strong>New Job Matches</strong>
+                                            <br><small class="text-muted">When new jobs match your profile</small>
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" name="web_system_updates" id="web_system_updates"
+                                               {% if preferences.web_system_updates %}checked{% endif %}>
+                                        <label class="form-check-label" for="web_system_updates">
+                                            <strong>System Updates</strong>
+                                            <br><small class="text-muted">Important platform updates and announcements</small>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'user_notifications:list' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Notifications
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Save Preferences
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.form-check-input {
+    margin-top: 0.125rem;
+}
+
+.form-check-label {
+    margin-left: 0.5rem;
+    line-height: 1.4;
+}
+
+.card {
+    border: none;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+</style>
+{% endblock %} 
