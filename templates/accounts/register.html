@@ -1,0 +1,930 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Register - Elevate Workforce Solutions{% endblock %}
+
+{% block content %}
+<!-- Professional Register Section -->
+<section class="auth-section min-vh-100 d-flex align-items-center">
+    <div class="container-fluid h-100">
+        <div class="row h-100 g-0">
+            <!-- Left Side - Registration Form -->
+            <div class="col-lg-7">
+                <div class="auth-form-container d-flex align-items-center justify-content-center">
+                    <div class="auth-form-wrapper">
+                        <!-- Form Header -->
+                        <div class="form-header text-center mb-4">
+                            <div class="form-icon mb-3">
+                                <i class="fas fa-user-plus"></i>
+                            </div>
+                            <h2 class="form-title">Join Elevate Workforce</h2>
+                            <p class="form-subtitle">Start your professional journey today</p>
+                        </div>
+
+                        <!-- Error Messages -->
+                        {% if form.errors %}
+                            <div class="alert alert-danger enhanced-alert">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <div>
+                                    <strong>Registration Failed</strong>
+                                    <ul class="mb-0 mt-2">
+                                        {% for field, errors in form.errors.items %}
+                                            {% for error in errors %}
+                                                <li>{{ error }}</li>
+                                            {% endfor %}
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <!-- Registration Form -->
+                        <form method="post" class="auth-form" id="registerForm" data-auto-save="registration">
+                            {% csrf_token %}
+                            
+                            <!-- User Type Selection -->
+                            <div class="form-group mb-4">
+                                <label class="form-label">
+                                    <i class="fas fa-user-tag me-2"></i>I am registering as
+                                </label>
+                                <div class="user-type-selection">
+                                    <div class="row g-3">
+                                        <div class="col-6">
+                                            <input type="radio" class="user-type-radio" name="user_type" value="job_seeker" id="job_seeker" required>
+                                            <label class="user-type-card" for="job_seeker">
+                                                <div class="type-icon">
+                                                    <i class="fas fa-user"></i>
+                                                </div>
+                                                <div class="type-content">
+                                                    <h6 class="type-title">Job Seeker</h6>
+                                                    <p class="type-description">Looking for opportunities</p>
+                                                </div>
+                                                <div class="type-check">
+                                                    <i class="fas fa-check"></i>
+                                                </div>
+                                            </label>
+                                        </div>
+                                        <div class="col-6">
+                                            <input type="radio" class="user-type-radio" name="user_type" value="company" id="company" required>
+                                            <label class="user-type-card" for="company">
+                                                <div class="type-icon">
+                                                    <i class="fas fa-building"></i>
+                                                </div>
+                                                <div class="type-content">
+                                                    <h6 class="type-title">Company</h6>
+                                                    <p class="type-description">Hiring talent</p>
+                                                </div>
+                                                <div class="type-check">
+                                                    <i class="fas fa-check"></i>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Personal Information -->
+                            <div class="form-section">
+                                <h6 class="section-title">
+                                    <i class="fas fa-user-circle me-2"></i>Personal Information
+                                </h6>
+                                
+                                <div class="row g-3">
+                                    <!-- Username -->
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label">
+                                                <i class="fas fa-at me-2"></i>Username
+                                            </label>
+                                            <div class="input-wrapper">
+                                                <input type="text" name="username" class="form-control enhanced-input" 
+                                                       placeholder="Choose a username"
+                                                       value="{{ form.username.value|default:'' }}" required>
+                                                <div class="input-focus-border"></div>
+                                                <div class="input-validation">
+                                                    <i class="fas fa-check-circle text-success"></i>
+                                                    <i class="fas fa-times-circle text-danger"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Email -->
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label">
+                                                <i class="fas fa-envelope me-2"></i>Email Address
+                                            </label>
+                                            <div class="input-wrapper">
+                                                <input type="email" name="email" class="form-control enhanced-input" 
+                                                       placeholder="your.email@example.com"
+                                                       value="{{ form.email.value|default:'' }}" required>
+                                                <div class="input-focus-border"></div>
+                                                <div class="input-validation">
+                                                    <i class="fas fa-check-circle text-success"></i>
+                                                    <i class="fas fa-times-circle text-danger"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Security Information -->
+                            <div class="form-section">
+                                <h6 class="section-title">
+                                    <i class="fas fa-shield-alt me-2"></i>Security Information
+                                </h6>
+                                
+                                <div class="row g-3">
+                                    <!-- Password -->
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label">
+                                                <i class="fas fa-lock me-2"></i>Password
+                                            </label>
+                                            <div class="input-wrapper">
+                                                <input type="password" name="password1" class="form-control enhanced-input" 
+                                                       placeholder="Create a strong password" required>
+                                                <button type="button" class="password-toggle" data-target="password1">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <div class="input-focus-border"></div>
+                                            </div>
+                                            <!-- Password Strength Indicator -->
+                                            <div class="password-strength mt-2">
+                                                <div class="strength-bars">
+                                                    <div class="strength-bar"></div>
+                                                    <div class="strength-bar"></div>
+                                                    <div class="strength-bar"></div>
+                                                    <div class="strength-bar"></div>
+                                                </div>
+                                                <small class="strength-text">Password strength: <span>-</span></small>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Confirm Password -->
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label">
+                                                <i class="fas fa-check-double me-2"></i>Confirm Password
+                                            </label>
+                                            <div class="input-wrapper">
+                                                <input type="password" name="password2" class="form-control enhanced-input" 
+                                                       placeholder="Confirm your password" required>
+                                                <button type="button" class="password-toggle" data-target="password2">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <div class="input-focus-border"></div>
+                                                <div class="password-match">
+                                                    <i class="fas fa-check text-success"></i>
+                                                    <i class="fas fa-times text-danger"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Terms and Conditions -->
+                            <div class="form-group mb-4">
+                                <div class="enhanced-checkbox-wrapper">
+                                    <input class="form-check-input enhanced-checkbox" type="checkbox" id="terms" required>
+                                    <label class="form-check-label" for="terms">
+                                        I agree to the <a href="#" class="terms-link">Terms of Service</a> and 
+                                        <a href="#" class="terms-link">Privacy Policy</a>
+                                    </label>
+                                    <div class="checkbox-checkmark">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <button type="submit" class="btn btn-primary enhanced-btn w-100 mb-4" id="registerBtn">
+                                <span class="btn-text">
+                                    <i class="fas fa-rocket me-2"></i>Create My Account
+                                </span>
+                                <div class="btn-loader">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                </div>
+                            </button>
+
+                            <!-- Login Link -->
+                            <div class="text-center">
+                                <p class="mb-0 switch-auth">
+                                    Already have an account? 
+                                    <a href="{% url 'accounts:login' %}" class="auth-switch-link">Sign In</a>
+                                </p>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Side - Benefits -->
+            <div class="col-lg-5 d-none d-lg-flex" style="min-height: 100vh;">
+                <div class="auth-benefits d-flex align-items-center justify-content-center">
+                    <div class="benefits-content text-center">
+                        <div class="benefits-header mb-5">
+                            <h3 class="benefits-title">Why Join Elevate Workforce?</h3>
+                            <p class="benefits-subtitle">Unlock endless opportunities with Nepal's premier job platform</p>
+                        </div>
+                        
+                        <div class="benefits-list">
+                            <div class="benefit-item">
+                                <div class="benefit-icon">
+                                    <i class="fas fa-rocket"></i>
+                                </div>
+                                <div class="benefit-content">
+                                    <h6>Fast Job Matching</h6>
+                                    <p>AI-powered algorithm connects you with relevant opportunities instantly</p>
+                                </div>
+                            </div>
+                            
+                            <div class="benefit-item">
+                                <div class="benefit-icon">
+                                    <i class="fas fa-shield-check"></i>
+                                </div>
+                                <div class="benefit-content">
+                                    <h6>Verified Companies</h6>
+                                    <p>All employers are thoroughly vetted for legitimacy and credibility</p>
+                                </div>
+                            </div>
+                            
+                            <div class="benefit-item">
+                                <div class="benefit-icon">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <div class="benefit-content">
+                                    <h6>Career Growth</h6>
+                                    <p>Access exclusive training, mentorship, and career development resources</p>
+                                </div>
+                            </div>
+                            
+                            <div class="benefit-item">
+                                <div class="benefit-icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div class="benefit-content">
+                                    <h6>Professional Network</h6>
+                                    <p>Connect with industry leaders and expand your professional circle</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Success Stats -->
+                        <div class="success-stats mt-5">
+                            <div class="stats-grid">
+                                <div class="stat-item">
+                                    <div class="stat-number">98%</div>
+                                    <div class="stat-label">Job Match Rate</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-number">2 weeks</div>
+                                    <div class="stat-label">Avg. Hiring Time</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-number">500+</div>
+                                    <div class="stat-label">Partner Companies</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Enhanced Styles -->
+<style>
+/* Base Auth Section (inherits from login styles) */
+.auth-section {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    position: relative;
+    min-height: 100vh;
+}
+
+/* Right Side Benefits */
+.auth-benefits {
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+    color: white;
+    padding: 3rem;
+    position: relative;
+    overflow: hidden;
+    min-height: 100vh;
+}
+
+.auth-benefits::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="benefits-pattern" width="30" height="30" patternUnits="userSpaceOnUse"><polygon points="15,0 30,15 15,30 0,15" fill="white" opacity="0.05"/></pattern></defs><rect width="100" height="100" fill="url(%23benefits-pattern)"/></svg>');
+    pointer-events: none;
+}
+
+.benefits-content {
+    position: relative;
+    z-index: 1;
+    max-width: 400px;
+}
+
+.benefits-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: white;
+}
+
+.benefits-subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    line-height: 1.6;
+    color: white;
+}
+
+/* Benefits List */
+.benefits-list {
+    text-align: left;
+}
+
+.benefit-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: var(--space-2xl);
+}
+
+.benefit-icon {
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-xl);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: var(--space-lg);
+    flex-shrink: 0;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.benefit-content h6 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    color: white;
+}
+
+.benefit-content p {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    margin: 0;
+    line-height: 1.5;
+    color: white;
+}
+
+/* Success Stats */
+.success-stats {
+    padding-top: var(--space-2xl);
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-lg);
+    text-align: center;
+}
+
+.stat-item {
+    opacity: 0.9;
+}
+
+.stat-number {
+    font-size: 1.5rem;
+    font-weight: 700;
+    display: block;
+    margin-bottom: 0.25rem;
+    color: white;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    opacity: 0.8;
+    color: white;
+}
+
+/* Form Enhancements */
+.auth-form-wrapper {
+    width: 100%;
+    max-width: 550px;
+}
+
+.form-section {
+    background: var(--corporate-white);
+    border: 1px solid var(--corporate-gray-200);
+    border-radius: var(--radius-xl);
+    padding: var(--space-2xl);
+    margin-bottom: var(--space-2xl);
+}
+
+.section-title {
+    font-size: 1.1rem;
+    font-weight: var(--font-weight-semibold);
+    color: var(--corporate-gray-800);
+    margin-bottom: var(--space-lg);
+    padding-bottom: var(--space-sm);
+    border-bottom: 2px solid var(--corporate-gray-100);
+}
+
+/* User Type Selection */
+.user-type-selection {
+    margin-top: var(--space-sm);
+}
+
+.user-type-radio {
+    display: none;
+}
+
+.user-type-card {
+    display: block;
+    background: var(--corporate-white);
+    border: 2px solid var(--corporate-gray-200);
+    border-radius: var(--radius-xl);
+    padding: var(--space-xl);
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition-base);
+    position: relative;
+    height: 100%;
+}
+
+.user-type-card:hover {
+    border-color: var(--primary-navy-subtle);
+    background: var(--primary-navy-subtle);
+}
+
+.user-type-radio:checked + .user-type-card {
+    border-color: var(--primary-navy);
+    background: var(--primary-navy-subtle);
+}
+
+.type-icon {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, var(--primary-navy) 0%, var(--secondary-gold) 100%);
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto var(--space-md);
+    color: white;
+    font-size: 1.25rem;
+}
+
+.type-title {
+    font-weight: var(--font-weight-semibold);
+    color: var(--corporate-gray-900);
+    margin-bottom: var(--space-xs);
+}
+
+.type-description {
+    font-size: 0.9rem;
+    color: var(--corporate-gray-600);
+    margin: 0;
+}
+
+.type-check {
+    position: absolute;
+    top: var(--space-md);
+    right: var(--space-md);
+    width: 24px;
+    height: 24px;
+    background: var(--success-green);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.8rem;
+    opacity: 0;
+    transform: scale(0);
+    transition: var(--transition-base);
+}
+
+.user-type-radio:checked + .user-type-card .type-check {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Enhanced Form Controls */
+.enhanced-input {
+    border: 2px solid var(--corporate-gray-200);
+    border-radius: var(--radius-lg);
+    padding: var(--space-md) var(--space-lg);
+    font-size: 1rem;
+    transition: var(--transition-base);
+    background: var(--corporate-white);
+    padding-right: var(--space-5xl);
+}
+
+.enhanced-input:focus {
+    border-color: var(--primary-navy);
+    box-shadow: 0 0 0 3px var(--primary-navy-subtle);
+    outline: none;
+}
+
+.input-wrapper {
+    position: relative;
+}
+
+.input-focus-border {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    width: 0;
+    background: linear-gradient(90deg, var(--primary-navy) 0%, var(--secondary-gold) 100%);
+    transition: var(--transition-base);
+}
+
+.enhanced-input:focus + .password-toggle + .input-focus-border,
+.enhanced-input:focus + .input-focus-border {
+    width: 100%;
+}
+
+/* Input Validation */
+.input-validation {
+    position: absolute;
+    right: var(--space-md);
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+}
+
+.input-validation i {
+    display: none;
+    font-size: 1.1rem;
+}
+
+.input-validation .fa-check-circle {
+    display: none;
+}
+
+.input-validation .fa-times-circle {
+    display: none;
+}
+
+/* Password Strength */
+.password-strength {
+    margin-top: var(--space-sm);
+}
+
+.strength-bars {
+    display: flex;
+    gap: var(--space-xs);
+    margin-bottom: var(--space-xs);
+}
+
+.strength-bar {
+    height: 4px;
+    flex: 1;
+    background: var(--corporate-gray-200);
+    border-radius: var(--radius-base);
+    transition: var(--transition-base);
+}
+
+.strength-bar.weak {
+    background: #ef4444;
+}
+
+.strength-bar.fair {
+    background: #f59e0b;
+}
+
+.strength-bar.good {
+    background: #10b981;
+}
+
+.strength-bar.strong {
+    background: #059669;
+}
+
+.strength-text {
+    color: var(--corporate-gray-600);
+}
+
+/* Password Match */
+.password-match {
+    position: absolute;
+    right: var(--space-5xl);
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+}
+
+.password-match i {
+    display: none;
+    font-size: 1.1rem;
+}
+
+/* Enhanced Checkbox */
+.enhanced-checkbox-wrapper {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-md);
+    padding: var(--space-lg);
+    background: var(--corporate-gray-50);
+    border-radius: var(--radius-lg);
+    border: 2px solid var(--corporate-gray-200);
+    transition: var(--transition-base);
+}
+
+.enhanced-checkbox-wrapper:hover {
+    border-color: var(--primary-navy-subtle);
+}
+
+.enhanced-checkbox {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--corporate-gray-300);
+    border-radius: var(--radius-base);
+    position: relative;
+    flex-shrink: 0;
+}
+
+.enhanced-checkbox:checked {
+    background-color: var(--primary-navy);
+    border-color: var(--primary-navy);
+}
+
+.terms-link {
+    color: var(--primary-navy);
+    text-decoration: none;
+    font-weight: var(--font-weight-medium);
+}
+
+.terms-link:hover {
+    color: var(--secondary-gold);
+}
+
+/* Password Toggle */
+.password-toggle {
+    position: absolute;
+    right: var(--space-md);
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--corporate-gray-500);
+    cursor: pointer;
+    padding: var(--space-sm);
+    z-index: 3;
+}
+
+.password-toggle:hover {
+    color: var(--primary-navy);
+}
+
+/* Enhanced Button */
+.enhanced-btn {
+    position: relative;
+    background: linear-gradient(135deg, var(--primary-navy) 0%, var(--primary-navy-light) 100%);
+    border: none;
+    border-radius: var(--radius-lg);
+    padding: var(--space-md) var(--space-xl);
+    font-size: 1.1rem;
+    font-weight: var(--font-weight-semibold);
+    transition: var(--transition-base);
+    overflow: hidden;
+}
+
+.enhanced-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.enhanced-btn:active {
+    transform: translateY(0);
+}
+
+.btn-loader {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    transition: var(--transition-base);
+}
+
+.enhanced-btn.loading .btn-text {
+    opacity: 0;
+}
+
+.enhanced-btn.loading .btn-loader {
+    opacity: 1;
+}
+
+/* Switch Auth */
+.switch-auth {
+    color: var(--corporate-gray-600);
+}
+
+.auth-switch-link {
+    color: var(--primary-navy);
+    text-decoration: none;
+    font-weight: var(--font-weight-semibold);
+    transition: var(--transition-base);
+}
+
+.auth-switch-link:hover {
+    color: var(--secondary-gold);
+}
+
+/* Responsive Design */
+@media (max-width: 991.98px) {
+    .auth-form-container {
+        padding: var(--space-2xl) var(--space-lg);
+    }
+    
+    .form-title {
+        font-size: 1.75rem;
+    }
+    
+    .benefits-title {
+        font-size: 1.75rem;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 575.98px) {
+    .auth-form-container {
+        padding: var(--space-xl) var(--space-base);
+    }
+    
+    .auth-form-wrapper {
+        max-width: 100%;
+    }
+    
+    .form-section {
+        padding: var(--space-lg);
+    }
+    
+    .user-type-card {
+        padding: var(--space-lg);
+    }
+}
+</style>
+
+<!-- Enhanced JavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Password Toggle
+    const passwordToggles = document.querySelectorAll('.password-toggle');
+    passwordToggles.forEach(toggle => {
+        toggle.addEventListener('click', function() {
+            const target = this.dataset.target;
+            const input = document.querySelector(`input[name="${target}"]`);
+            
+            if (input) {
+                const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+                input.setAttribute('type', type);
+                
+                const icon = this.querySelector('i');
+                icon.classList.toggle('fa-eye');
+                icon.classList.toggle('fa-eye-slash');
+            }
+        });
+    });
+    
+    // Password Strength
+    const password1 = document.querySelector('input[name="password1"]');
+    const strengthBars = document.querySelectorAll('.strength-bar');
+    const strengthText = document.querySelector('.strength-text span');
+    
+    if (password1 && strengthBars.length) {
+        password1.addEventListener('input', function() {
+            const password = this.value;
+            const strength = calculatePasswordStrength(password);
+            
+            // Reset bars
+            strengthBars.forEach(bar => {
+                bar.className = 'strength-bar';
+            });
+            
+            // Set strength
+            if (strength.score > 0) {
+                for (let i = 0; i < strength.score; i++) {
+                    strengthBars[i].classList.add(strength.class);
+                }
+            }
+            
+            strengthText.textContent = strength.text;
+        });
+    }
+    
+    // Password Match
+    const password2 = document.querySelector('input[name="password2"]');
+    const matchIcons = document.querySelector('.password-match');
+    
+    if (password1 && password2 && matchIcons) {
+        function checkPasswordMatch() {
+            const match = password1.value === password2.value && password2.value.length > 0;
+            const checkIcon = matchIcons.querySelector('.fa-check');
+            const timesIcon = matchIcons.querySelector('.fa-times');
+            
+            if (password2.value.length === 0) {
+                checkIcon.style.display = 'none';
+                timesIcon.style.display = 'none';
+            } else if (match) {
+                checkIcon.style.display = 'inline';
+                timesIcon.style.display = 'none';
+            } else {
+                checkIcon.style.display = 'none';
+                timesIcon.style.display = 'inline';
+            }
+        }
+        
+        password1.addEventListener('input', checkPasswordMatch);
+        password2.addEventListener('input', checkPasswordMatch);
+    }
+    
+    // Form Submission
+    const registerForm = document.getElementById('registerForm');
+    const registerBtn = document.getElementById('registerBtn');
+    
+    if (registerForm && registerBtn) {
+        registerForm.addEventListener('submit', function(e) {
+            registerBtn.classList.add('loading');
+            registerBtn.disabled = true;
+        });
+    }
+    
+    // Input Focus Effects
+    const inputs = document.querySelectorAll('.enhanced-input');
+    inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            this.parentElement.classList.add('focused');
+        });
+        
+        input.addEventListener('blur', function() {
+            this.parentElement.classList.remove('focused');
+        });
+    });
+    
+    // Auto-save form data
+    const formInputs = document.querySelectorAll('#registerForm input[type="text"], #registerForm input[type="email"]');
+    formInputs.forEach(input => {
+        // Load saved data
+        const savedValue = localStorage.getItem(`register_${input.name}`);
+        if (savedValue && !input.value) {
+            input.value = savedValue;
+        }
+        
+        // Save on change
+        input.addEventListener('input', function() {
+            localStorage.setItem(`register_${this.name}`, this.value);
+        });
+    });
+    
+    // Clear saved data on successful submission
+    registerForm?.addEventListener('submit', function() {
+        formInputs.forEach(input => {
+            localStorage.removeItem(`register_${input.name}`);
+        });
+    });
+});
+
+// Password Strength Calculator
+function calculatePasswordStrength(password) {
+    let score = 0;
+    let feedback = [];
+    
+    if (password.length >= 8) score++;
+    if (password.match(/[a-z]/)) score++;
+    if (password.match(/[A-Z]/)) score++;
+    if (password.match(/\d/)) score++;
+    if (password.match(/[^a-zA-Z\d]/)) score++;
+    
+    const strengths = [
+        { score: 0, text: '-', class: '' },
+        { score: 1, text: 'Very Weak', class: 'weak' },
+        { score: 2, text: 'Weak', class: 'weak' },
+        { score: 3, text: 'Fair', class: 'fair' },
+        { score: 4, text: 'Good', class: 'good' },
+        { score: 5, text: 'Strong', class: 'strong' }
+    ];
+    
+    return strengths[score] || strengths[0];
+}
+</script>
+{% endblock %} 

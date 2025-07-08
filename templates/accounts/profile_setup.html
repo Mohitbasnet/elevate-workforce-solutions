@@ -1,0 +1,345 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Complete Your Profile - Elevate Workforce Solutions{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    {% if show_user_type_selection %}
+                    <!-- User Type Selection -->
+                    <div class="text-center mb-4">
+                        <i class="fas fa-user-plus fa-3x text-primary mb-3"></i>
+                        <h2 class="fw-bold">Choose Your Account Type</h2>
+                        <p class="text-muted">Select how you want to use Elevate Workforce Solutions</p>
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-6">
+                                <div class="card h-100 user-type-card" data-type="job_seeker">
+                                    <div class="card-body text-center p-4">
+                                        <i class="fas fa-user-tie fa-4x text-primary mb-3"></i>
+                                        <h5 class="fw-bold">Job Seeker</h5>
+                                        <p class="text-muted">Looking for employment opportunities and career growth</p>
+                                        <ul class="list-unstyled text-start">
+                                            <li><i class="fas fa-check text-success me-2"></i>Search and apply for jobs</li>
+                                            <li><i class="fas fa-check text-success me-2"></i>Upload resume and portfolio</li>
+                                            <li><i class="fas fa-check text-success me-2"></i>Track application status</li>
+                                            <li><i class="fas fa-check text-success me-2"></i>Get job alerts</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card h-100 user-type-card" data-type="company">
+                                    <div class="card-body text-center p-4">
+                                        <i class="fas fa-building fa-4x text-primary mb-3"></i>
+                                        <h5 class="fw-bold">Company</h5>
+                                        <p class="text-muted">Posting jobs and finding the right talent for your organization</p>
+                                        <ul class="list-unstyled text-start">
+                                            <li><i class="fas fa-check text-success me-2"></i>Post job openings</li>
+                                            <li><i class="fas fa-check text-success me-2"></i>Manage applications</li>
+                                            <li><i class="fas fa-check text-success me-2"></i>Search candidate profiles</li>
+                                            <li><i class="fas fa-check text-success me-2"></i>Company branding</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <input type="hidden" name="user_type" id="selected_user_type" value="">
+                        
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg" id="continueBtn" disabled>
+                                <i class="fas fa-arrow-right me-2"></i>Continue with Selection
+                            </button>
+                        </div>
+                    </form>
+                    
+                    {% else %}
+                    <!-- Profile Setup Form -->
+                    <div class="text-center mb-4">
+                        <i class="fas fa-user-edit fa-3x text-primary mb-3"></i>
+                        <h2 class="fw-bold">Complete Your Profile</h2>
+                        <p class="text-muted">
+                            {% if user_type == 'company' %}
+                                Tell us about your company to attract the best talent
+                            {% else %}
+                                Build your professional profile to stand out to employers
+                            {% endif %}
+                        </p>
+                    </div>
+                    {% endif %}
+
+                    <!-- Progress Indicator -->
+                    <div class="progress mb-4" style="height: 8px;">
+                        <div class="progress-bar bg-primary" role="progressbar" style="width: 50%"></div>
+                    </div>
+                    <p class="text-center text-muted mb-4">Step 2 of 2 - Profile Information</p>
+
+                    <form method="post" enctype="multipart/form-data" data-auto-save="profile-setup">
+                        {% csrf_token %}
+                        
+                        <!-- Basic Profile Information -->
+                        <div class="mb-4">
+                            <h5 class="fw-bold text-primary border-bottom pb-2 mb-3">
+                                <i class="fas fa-user me-2"></i>Basic Information
+                            </h5>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label for="{{ user_form.phone.id_for_label }}" class="form-label">Phone Number</label>
+                                    {{ user_form.phone }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="{{ user_form.profile_picture.id_for_label }}" class="form-label">Profile Picture</label>
+                                    {{ user_form.profile_picture }}
+                                </div>
+                            </div>
+                            
+                            <div class="mt-3">
+                                <label for="{{ user_form.address.id_for_label }}" class="form-label">Address</label>
+                                {{ user_form.address }}
+                            </div>
+                        </div>
+
+                        {% if user_type == 'company' %}
+                        <!-- Company Specific Fields -->
+                        <div class="mb-4">
+                            <h5 class="fw-bold text-primary border-bottom pb-2 mb-3">
+                                <i class="fas fa-building me-2"></i>Company Details
+                            </h5>
+                            
+                            <div class="mb-3">
+                                <label for="{{ company_form.company_name.id_for_label }}" class="form-label">Company Name *</label>
+                                {{ company_form.company_name }}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ company_form.company_description.id_for_label }}" class="form-label">Company Description *</label>
+                                {{ company_form.company_description }}
+                                <div class="form-text">Describe your company, its mission, and what makes it special</div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label for="{{ company_form.website.id_for_label }}" class="form-label">Website</label>
+                                    {{ company_form.website }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="{{ company_form.industry.id_for_label }}" class="form-label">Industry *</label>
+                                    {{ company_form.industry }}
+                                </div>
+                            </div>
+                            
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <label for="{{ company_form.company_size.id_for_label }}" class="form-label">Company Size</label>
+                                    {{ company_form.company_size }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="{{ company_form.established_year.id_for_label }}" class="form-label">Established Year</label>
+                                    {{ company_form.established_year }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% else %}
+                        <!-- Job Seeker Specific Fields -->
+                        <div class="mb-4">
+                            <h5 class="fw-bold text-primary border-bottom pb-2 mb-3">
+                                <i class="fas fa-id-card me-2"></i>Personal Details
+                            </h5>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label for="{{ job_seeker_form.first_name.id_for_label }}" class="form-label">First Name *</label>
+                                    {{ job_seeker_form.first_name }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="{{ job_seeker_form.last_name.id_for_label }}" class="form-label">Last Name *</label>
+                                    {{ job_seeker_form.last_name }}
+                                </div>
+                            </div>
+                            
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <label for="{{ job_seeker_form.date_of_birth.id_for_label }}" class="form-label">Date of Birth</label>
+                                    {{ job_seeker_form.date_of_birth }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="{{ job_seeker_form.experience_years.id_for_label }}" class="form-label">Years of Experience</label>
+                                    {{ job_seeker_form.experience_years }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <h5 class="fw-bold text-primary border-bottom pb-2 mb-3">
+                                <i class="fas fa-briefcase me-2"></i>Professional Information
+                            </h5>
+                            
+                            <div class="mb-3">
+                                <label for="{{ job_seeker_form.resume.id_for_label }}" class="form-label">Resume/CV</label>
+                                {{ job_seeker_form.resume }}
+                                <div class="form-text">Upload your latest resume in PDF format (Max 5MB)</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ job_seeker_form.skills.id_for_label }}" class="form-label">Skills *</label>
+                                {{ job_seeker_form.skills }}
+                                <div class="form-text">Enter your key skills separated by commas (e.g., Python, JavaScript, Project Management)</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ job_seeker_form.education.id_for_label }}" class="form-label">Education</label>
+                                {{ job_seeker_form.education }}
+                                <div class="form-text">Describe your educational background, degrees, and certifications</div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Form Actions -->
+                        <div class="d-flex justify-content-between mt-5">
+                            <a href="{% url 'jobs:home' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Skip for Now
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-check me-2"></i>Complete Profile
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<style>
+.progress {
+    border-radius: 10px;
+}
+
+.progress-bar {
+    border-radius: 10px;
+}
+
+.border-bottom {
+    border-color: #dee2e6 !important;
+}
+
+.form-text {
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.card {
+    border: none;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+/* User Type Selection Cards */
+.user-type-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid #e9ecef;
+}
+
+.user-type-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.15);
+    border-color: #2563eb;
+}
+
+.user-type-card.selected {
+    border-color: #2563eb;
+    background-color: #f8faff;
+    transform: translateY(-5px);
+    box-shadow: 0 1rem 2rem rgba(37, 99, 235, 0.15);
+}
+
+.user-type-card.selected i {
+    color: #2563eb !important;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // User type selection
+    const userTypeCards = document.querySelectorAll('.user-type-card');
+    const selectedUserTypeInput = document.getElementById('selected_user_type');
+    const continueBtn = document.getElementById('continueBtn');
+    
+    userTypeCards.forEach(card => {
+        card.addEventListener('click', function() {
+            // Remove selected class from all cards
+            userTypeCards.forEach(c => c.classList.remove('selected'));
+            
+            // Add selected class to clicked card
+            this.classList.add('selected');
+            
+            // Set the hidden input value
+            const userType = this.getAttribute('data-type');
+            selectedUserTypeInput.value = userType;
+            
+            // Enable the continue button
+            continueBtn.disabled = false;
+        });
+    });
+    
+    // Form validation
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const requiredFields = form.querySelectorAll('input[required], textarea[required], select[required]');
+        let hasError = false;
+        
+        requiredFields.forEach(field => {
+            if (!field.value.trim()) {
+                field.classList.add('is-invalid');
+                hasError = true;
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        });
+        
+        if (hasError) {
+            e.preventDefault();
+            showToast('Please fill in all required fields', 'danger');
+        }
+    });
+    
+    // File upload preview
+    const fileInputs = document.querySelectorAll('input[type="file"]');
+    fileInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                    showToast('File size should not exceed 5MB', 'warning');
+                    this.value = '';
+                    return;
+                }
+                
+                const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf'];
+                if (!allowedTypes.includes(file.type)) {
+                    showToast('Please select a valid file type (JPG, PNG, GIF, PDF)', 'warning');
+                    this.value = '';
+                    return;
+                }
+            }
+        });
+    });
+});
+</script>
+{% endblock %} 
